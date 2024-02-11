@@ -42,7 +42,7 @@ def upload_fname(drive_service, fname):
 
 
 def main():
-    now datetime.now(tz=pytz.timezone('America/Argentina/Buenos_Aires'))
+    now = datetime.now(tz=pytz.timezone('America/Argentina/Buenos_Aires'))
     fname = f"cortes-enre-{now.strftime('%Y-%m-%dT%H')}.txt"
     with open(fname, 'w') as f:
         f.write(download_cortes())
