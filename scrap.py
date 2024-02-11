@@ -1,3 +1,5 @@
+import argparse
+import gzip
 import pytz
 import requests
 from datetime import datetime
@@ -21,17 +23,22 @@ def setup_gdrive(credentials_secret):
     return drive_service
 
 url_cortes = 'https://www.enre.gov.ar/mapaCortes/datos/Datos_PaginaWeb.js?11'
-url_clima = 'https://api.cammesa.com/demanda-svc/demanda/ObtieneDemandaYTemperaturaRegion?id_region={region}'
+url_demanda = 'https://api.cammesa.com/demanda-svc/demanda/ObtieneDemandaYTemperaturaRegion?id_region={region}'
+url_clima = 'https://www.enre.gov.ar/Graficos/UFS/data/Datos_UFS.js?16'
 
 def download_cortes():
     return requests.get(url_cortes).content.decode('utf8')
 
 
 def download_clima():
+    return requests.get(url_clima).content.decode('utf8')
+
+
+def download_demanda():
     regiones = [1077, 1078]
     res = {}
     for r in regiones:
-        res[r] = requests.get(url_clima.format(region=r)).content.decode('utf8')
+        res[r] = requests.get(url_demanda.format(region=r)).content.decode('utf8')
     return res
 
 def upload_fname(drive_service, fname):
@@ -42,26 +49,40 @@ def upload_fname(drive_service, fname):
 
 
 def main():
-    now = datetime.now(tz=pytz.timezone('America/Argentina/Buenos_Aires'))
-    fname = f"cortes-enre-{now.strftime('%Y-%m-%dT%H')}.txt"
-    with open(fname, 'w') as f:
-        f.write(download_cortes())
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dry-run', default=False, action='store_true')
+    args = parser.parse_args()
 
-    fnames = [fname]
-    
-    for region, region_txt in download_clima().items():
-        fname = f"demanda-enre-{now.strftime('%Y-%m-%dT%H')}-{region}.txt"
-        with open(fname, 'w') as f:
-            f.write(region_txt)
+    now = datetime.now(tz=pytz.timezone('America/Argentina/Buenos_Aires'))
+
+    fnames = []
+
+    # CORTES
+    fname = f"cortes-enre-{now.strftime('%Y-%m-%dT%H')}.txt.gz"
+    with gzip.open(fname, 'w') as f:
+        f.write(download_cortes().encode('utf8'))
+    fnames.append(fname)
+
+    # CLIMA
+    fname = f"clima-enre-{now.strftime('%Y-%m-%dT%H')}.txt.gz"
+    with gzip.open(fname, 'w') as f:
+        f.write(download_clima().encode('utf8'))
+    fnames.append(fname)
+
+    # DEMANDA
+    for region, region_txt in download_demanda().items():
+        fname = f"demanda-enre-{now.strftime('%Y-%m-%dT%H')}-{region}.txt.gz"
+        with gzip.open(fname, 'w') as f:
+            f.write(region_txt.encode('utf8'))
             
         fnames.append(fname)
     
-    drive_service = setup_gdrive('GDRIVE_SECRET')
-    
-    for fname in fnames:
-        upload_fname(drive_service, fname)
+    if not args.dry_run:
+        drive_service = setup_gdrive('GDRIVE_SECRET')
+        
+        for fname in fnames:
+            upload_fname(drive_service, fname)
         
 
 if __name__ == '__main__': 
-    os.system('pip freeze')
     main()
