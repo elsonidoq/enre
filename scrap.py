@@ -51,31 +51,38 @@ def upload_fname(drive_service, fname):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dry-run', default=False, action='store_true')
+    parser.add_argument('--cortes', default=False, action='store_true')
+    parser.add_argument('--clima', default=False, action='store_true')
+    parser.add_argument('--demanda', default=False, action='store_true')
+
     args = parser.parse_args()
 
     now = datetime.now(tz=pytz.timezone('America/Argentina/Buenos_Aires'))
 
     fnames = []
 
-    # CORTES
-    fname = f"cortes-enre-{now.strftime('%Y-%m-%dT%H')}.txt.gz"
-    with gzip.open(fname, 'w') as f:
-        f.write(download_cortes().encode('utf8'))
-    fnames.append(fname)
-
-    # CLIMA
-    fname = f"clima-enre-{now.strftime('%Y-%m-%dT%H')}.txt.gz"
-    with gzip.open(fname, 'w') as f:
-        f.write(download_clima().encode('utf8'))
-    fnames.append(fname)
-
-    # DEMANDA
-    for region, region_txt in download_demanda().items():
-        fname = f"demanda-enre-{now.strftime('%Y-%m-%dT%H')}-{region}.txt.gz"
+    if args.cortes:
+        # CORTES
+        fname = f"cortes-enre-{now.strftime('%Y-%m-%dT%H')}.txt.gz"
         with gzip.open(fname, 'w') as f:
-            f.write(region_txt.encode('utf8'))
-            
+            f.write(download_cortes().encode('utf8'))
         fnames.append(fname)
+
+    if args.clima:
+        # CLIMA
+        fname = f"clima-enre-{now.strftime('%Y-%m-%dT%H')}.txt.gz"
+        with gzip.open(fname, 'w') as f:
+            f.write(download_clima().encode('utf8'))
+        fnames.append(fname)
+
+    if args.demanda:
+        # DEMANDA
+        for region, region_txt in download_demanda().items():
+            fname = f"demanda-enre-{now.strftime('%Y-%m-%dT%H')}-{region}.txt.gz"
+            with gzip.open(fname, 'w') as f:
+                f.write(region_txt.encode('utf8'))
+                
+            fnames.append(fname)
     
     if not args.dry_run:
         drive_service = setup_gdrive('GDRIVE_SECRET')
