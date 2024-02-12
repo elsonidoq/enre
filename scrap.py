@@ -63,14 +63,14 @@ def main():
 
     if args.cortes:
         # CORTES
-        fname = f"cortes-enre-{now.strftime('%Y-%m-%dT%H')}.txt.gz"
+        fname = f"cortes-enre-{now.strftime('%Y-%m-%dT%H:%M')}.txt.gz"
         with gzip.open(fname, 'w') as f:
             f.write(download_cortes().encode('utf8'))
         fnames.append(fname)
 
     if args.clima:
         # CLIMA
-        fname = f"clima-enre-{now.strftime('%Y-%m-%dT%H')}.txt.gz"
+        fname = f"clima-enre-{now.strftime('%Y-%m-%dT%H:%M')}.txt.gz"
         with gzip.open(fname, 'w') as f:
             f.write(download_clima().encode('utf8'))
         fnames.append(fname)
@@ -78,7 +78,7 @@ def main():
     if args.demanda:
         # DEMANDA
         for region, region_txt in download_demanda().items():
-            fname = f"demanda-enre-{now.strftime('%Y-%m-%dT%H')}-{region}.txt.gz"
+            fname = f"demanda-enre-{now.strftime('%Y-%m-%dT%H:%M')}-{region}.txt.gz"
             with gzip.open(fname, 'w') as f:
                 f.write(region_txt.encode('utf8'))
                 
