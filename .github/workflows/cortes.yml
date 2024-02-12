@@ -9,7 +9,7 @@ on:
   pull_request:
     branches: [ "main" ]
   schedule:
-    - cron: '10 * * * *'
+    - cron: '*/10 * * * *'
 
 permissions:
   contents: read
@@ -40,4 +40,4 @@ jobs:
       env: 
           GDRIVE_SECRET: ${{ secrets.GDRIVE_SECRET }}
       run: |
-        python scrap.py
+        python scrap.py --cortes
