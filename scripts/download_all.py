@@ -1,7 +1,7 @@
 import argparse
 
 from enre import settings
-from enre.lib.gdrive import GDrive
+from enre.gdrive import GDrive
 
 
 def main():

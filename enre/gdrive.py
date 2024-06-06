@@ -1,3 +1,5 @@
+import shutil
+import tempfile
 from functools import partial
 from tqdm import tqdm
 from multiprocessing import Pool
@@ -41,37 +43,49 @@ class GDrive:
             return False
 
         request = self.drive_service.files().get_media(fileId=file_id)
-        with open(os.path.join(path, os.path.basename(file['name'])), 'wb') as fh:
-            downloader = MediaIoBaseDownload(fh, request)
-            done = False
-            while not done:
-                status, done = downloader.next_chunk()
-                return True
+        output_fname = os.path.join(path, os.path.basename(file['name']))
+
+        tmp_fname = tempfile.mktemp()
+        try:
+            with open(tmp_fname, 'wb') as fh:
+                downloader = MediaIoBaseDownload(fh, request)
+                done = False
+                while not done:
+                    status, done = downloader.next_chunk()
+                    return True
+            shutil.move(tmp_fname, output_fname)
+        finally:
+            if os.path.exists(tmp_fname): os.unlink(tmp_fname)
+
 
     def download_all_files_parallel(self, path, skip_existing, processes=10, print_progress=True):
-        """
-        experimental implementation, does not work
-        """
         response = self.drive_service.files().list().execute()
 
+        if print_progress:
+            total_progress = tqdm(desc='Downloading', unit=' pages')
         files = response['files']
         page_no = 1
+        total_downloaded = 0
         while response.get('nextPageToken'):
             downloaded = 0
             with Pool(processes) as p:
                 compute_iterator = p.imap_unordered(
                     partial(self.download_file, path=path, skip_existing=skip_existing), files
                 )
-                if print_progress: compute_iterator = tqdm(compute_iterator, total=len(files))
+                # if print_progress: compute_iterator = tqdm(compute_iterator, total=len(files))
                 downloaded += sum(compute_iterator)
+            total_downloaded += downloaded
 
-            print(f'Downloaded {downloaded} files from page {page_no}')
+            # print(f'Downloaded {downloaded} files from page {page_no}')
 
             response = self.drive_service.files().list(pageToken=response['nextPageToken']).execute()
             files = response['files']
             page_no += 1
+            if print_progress:
+                total_progress.set_description(f'Total downloaded: {total_downloaded}, covered', refresh=False)
+                total_progress.update()
 
-        print('Finished Downloading')
+        # print('Finished Downloading')
 
     def download_all_files_seq(self, path, skip_existing):
         """

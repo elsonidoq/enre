@@ -4,7 +4,7 @@ import pytz
 import requests
 from datetime import datetime
 
-from enre.lib.gdrive import GDrive
+from enre.gdrive import GDrive
 
 url_cortes = 'https://www.enre.gov.ar/mapaCortes/datos/Datos_PaginaWeb.js?11'
 url_demanda = 'https://api.cammesa.com/demanda-svc/demanda/ObtieneDemandaYTemperaturaRegion?id_region={region}'
