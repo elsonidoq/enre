@@ -10,6 +10,7 @@ def main():
 
     args = parser.parse_args()
     gdrive = GDrive()
+    print(f'Downloading into {settings.DATA_PATH}')
     gdrive.download_all_files_parallel(settings.DATA_PATH, skip_existing=True, processes=args.processes)
 
 

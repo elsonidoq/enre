@@ -52,11 +52,10 @@ class GDrive:
                 done = False
                 while not done:
                     status, done = downloader.next_chunk()
+                    shutil.move(tmp_fname, output_fname)
                     return True
-            shutil.move(tmp_fname, output_fname)
         finally:
             if os.path.exists(tmp_fname): os.unlink(tmp_fname)
-
 
     def download_all_files_parallel(self, path, skip_existing, processes=10, print_progress=True):
         response = self.drive_service.files().list().execute()
