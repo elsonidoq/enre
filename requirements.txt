@@ -1,3 +1,4 @@
+-e .
 pytz==2022.1
 requests==2.28.2
 google-api-python-client==2.117.0
