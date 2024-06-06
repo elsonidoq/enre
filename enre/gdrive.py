@@ -96,25 +96,20 @@ class GDrive:
             files_progress = tqdm(desc='Downloading', unit=' files')
         files = response['files']
         page_no = 1
-        total_downloaded = 0
         while response.get('nextPageToken'):
-            downloaded = 0
             with Pool(processes) as p:
                 compute_iterator = p.imap_unordered(
                     partial(self.download_file, path=path, skip_existing=skip_existing), files
                 )
-                # if print_progress: compute_iterator = tqdm(compute_iterator, total=len(files))
-                downloaded += sum(compute_iterator)
-            total_downloaded += downloaded
-
-            # print(f'Downloaded {downloaded} files from page {page_no}')
+                if print_progress: compute_iterator = apply_tqdm(compute_iterator, files_progress)
+                # this waits for the computation to finish
+                sum(compute_iterator)
 
             response = self.drive_service.files().list(pageToken=response['nextPageToken']).execute()
             files = response['files']
             page_no += 1
             if print_progress:
                 page_progress.update()
-                files_progress.update(downloaded)
 
     def download_all_files_seq(self, path, skip_existing):
         """
