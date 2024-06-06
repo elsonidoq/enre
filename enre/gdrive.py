@@ -71,13 +71,13 @@ class GDrive:
             producer.start()
             while producer.is_alive():
                 files = producer.output_queue.get()
-                downloaded = 0
                 with Pool(processes) as p:
                     compute_iterator = p.imap_unordered(
                         partial(self.download_file, path=path, skip_existing=skip_existing), files
                     )
                     if print_progress: compute_iterator = apply_tqdm(compute_iterator, files_progress)
-                    downloaded += sum(compute_iterator)
+                    # this waits for the computation to finish
+                    sum(compute_iterator)
 
                 if print_progress:
                     page_progress.update()
