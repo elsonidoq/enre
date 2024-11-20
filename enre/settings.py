@@ -3,7 +3,7 @@ import os
 
 here = os.path.dirname(__file__)
 
-DATA_PATH = os.path.abspath(os.path.join(here, '../data'))
+DATA_PATH = os.path.abspath(os.path.join(here, '../notebooks/data'))
 CREDENTIALS_FNAME = os.path.abspath(os.path.join(here, '../credentials.json'))
 CREDENTIALS_ENV_VAR = 'GDRIVE_SECRET'
 
